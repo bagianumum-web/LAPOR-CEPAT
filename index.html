@@ -1,0 +1,1602 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LAPOR CEPAT - Balai Kota Kendari</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js for Dashboard Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- QRCode.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- html5-qrcode scanner library -->
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0284c7',
+                            600: '#0369a1',
+                            700: '#095186',
+                            800: '#0c4a6e',
+                            900: '#0c3d5a'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .printable-qr { page-break-inside: avoid; }
+        @media print {
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            body { background: white !important; }
+        }
+    </style>
+</head>
+<body class="h-full flex flex-col text-slate-800 antialiased selection:bg-brand-500 selection:text-white">
+
+    <!-- TOP NAVIGATION BAR -->
+    <header class="bg-brand-800 text-white shadow-md sticky top-0 z-40 no-print">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo & Title -->
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('public-report')">
+                    <div class="w-10 h-10 bg-amber-400 rounded-lg flex items-center justify-center text-brand-900 font-bold text-xl shadow-inner">
+                        <i class="fa-solid fa-bolt"></i>
+                    </div>
+                    <div>
+                        <div class="font-extrabold text-lg tracking-wider flex items-center space-x-2">
+                            <span>LAPOR CEPAT</span>
+                            <span class="text-xs bg-amber-400 text-brand-900 px-2 py-0.5 rounded-full font-bold">KENDARI</span>
+                        </div>
+                        <p class="text-[10px] text-slate-300 -mt-1 hidden sm:block">Balai Kota Kendari (Tower • Podium • MPP)</p>
+                    </div>
+                </div>
+
+                <!-- Navigation Controls -->
+                <div class="flex items-center space-x-2">
+                    <button onclick="switchTab('public-report')" id="nav-report-btn" class="px-3 py-2 rounded-lg text-sm font-medium bg-brand-700 hover:bg-brand-600 transition flex items-center space-x-1.5">
+                        <i class="fa-solid fa-paper-plane"></i>
+                        <span class="hidden md:inline">Buat Laporan</span>
+                    </button>
+                    <button onclick="switchTab('track-ticket')" id="nav-track-btn" class="px-3 py-2 rounded-lg text-sm font-medium hover:bg-brand-700 transition flex items-center space-x-1.5">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <span class="hidden md:inline">Cek Status</span>
+                    </button>
+                    
+                    <div class="h-6 w-px bg-brand-600 mx-1"></div>
+
+                    <!-- Dynamic Auth Button -->
+                    <div id="auth-button-container">
+                        <button onclick="openLoginModal()" class="px-3.5 py-2 rounded-lg text-sm font-semibold bg-amber-400 hover:bg-amber-300 text-brand-900 transition flex items-center space-x-1.5 shadow-sm">
+                            <i class="fa-solid fa-right-to-bracket"></i>
+                            <span>Login Pengelola</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ALERT BANNER FOR SYSTEM NOTIFICATIONS -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 no-print">
+
+        <!-- ================= SECTION 1: BUAT LAPORAN (PUBLIC) ================= -->
+        <section id="tab-public-report" class="space-y-6">
+            <!-- Hero Banner -->
+            <div class="bg-gradient-to-r from-brand-700 to-brand-900 rounded-2xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
+                <div class="absolute right-0 top-0 -mt-6 -mr-6 opacity-10 pointer-events-none">
+                    <i class="fa-solid fa-building-user text-9xl"></i>
+                </div>
+                <div class="max-w-2xl relative z-10 space-y-3">
+                    <span class="inline-block px-3 py-1 bg-amber-400 text-brand-900 rounded-full text-xs font-bold tracking-wide uppercase">
+                        Sistem Informasi Pelaporan Digital & QR Code
+                    </span>
+                    <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">Temukan Kerusakan atau Area Kotor? Laporkan Sekarang!</h1>
+                    <p class="text-slate-200 text-sm sm:text-base leading-relaxed">
+                        Layanan Aduan Kerusakan Fasilitas (AC, Lift, Toilet, Lampu, Kendaraan) & Kebersihan Area Kerja Balai Kota Kendari.
+                    </p>
+                    <div class="pt-2 flex flex-wrap gap-3">
+                        <button onclick="openScannerModal()" class="px-5 py-2.5 bg-amber-400 text-brand-900 font-semibold rounded-xl hover:bg-amber-300 transition shadow-lg flex items-center space-x-2">
+                            <i class="fa-solid fa-qrcode text-lg"></i>
+                            <span>Scan QR Code Aset/Zona</span>
+                        </button>
+                        <a href="#form-laporan" class="px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white font-medium rounded-xl transition backdrop-blur-sm border border-white/20 flex items-center space-x-2">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                            <span>Isi Formulir Manual</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form & Info Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8" id="form-laporan">
+                <!-- Form Column -->
+                <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6 sm:p-8">
+                    <div class="border-b border-slate-100 pb-4 mb-6 flex justify-between items-center">
+                        <div>
+                            <h2 class="text-xl font-bold text-slate-800 flex items-center space-x-2">
+                                <i class="fa-solid fa-clipboard-list text-brand-500"></i>
+                                <span>Formulir Pengaduan Digital</span>
+                            </h2>
+                            <p class="text-xs text-slate-500 mt-1">Lengkapi detail kejadian untuk percepatan penanganan oleh petugas</p>
+                        </div>
+                        <span id="qr-badge" class="hidden bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-semibold px-2.5 py-1 rounded-full items-center space-x-1">
+                            <i class="fa-solid fa-qrcode"></i>
+                            <span>QR Terdeteksi</span>
+                        </span>
+                    </div>
+
+                    <form id="reportForm" onsubmit="handleReportSubmit(event)" class="space-y-6">
+                        
+                        <!-- Categorization Radio Selection -->
+                        <div class="space-y-2">
+                            <label class="block text-sm font-bold text-slate-700">Kategori Aduan <span class="text-red-500">*</span></label>
+                            <div class="grid grid-cols-2 gap-4">
+                                <label class="relative flex flex-col p-4 rounded-xl border-2 border-slate-200 cursor-pointer hover:border-brand-500 transition shadow-sm group has-[:checked]:border-brand-600 has-[:checked]:bg-brand-50/50">
+                                    <input type="radio" name="kategori" value="FASILITAS" checked onchange="updateSubKategoriOptions()" class="sr-only">
+                                    <div class="flex items-center space-x-3 mb-1">
+                                        <div class="w-9 h-9 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center font-bold group-has-[:checked]:bg-brand-600 group-has-[:checked]:text-white transition">
+                                            <i class="fa-solid fa-screwdriver-wrench"></i>
+                                        </div>
+                                        <span class="font-bold text-slate-800 group-has-[:checked]:text-brand-900">Kerusakan Fasilitas</span>
+                                    </div>
+                                    <span class="text-xs text-slate-500">AC, Lift, Lampu, Toilet Rusak, Kendaraan Dinas</span>
+                                </label>
+
+                                <label class="relative flex flex-col p-4 rounded-xl border-2 border-slate-200 cursor-pointer hover:border-brand-500 transition shadow-sm group has-[:checked]:border-brand-600 has-[:checked]:bg-brand-50/50">
+                                    <input type="radio" name="kategori" value="KEBERSIHAN" onchange="updateSubKategoriOptions()" class="sr-only">
+                                    <div class="flex items-center space-x-3 mb-1">
+                                        <div class="w-9 h-9 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold group-has-[:checked]:bg-brand-600 group-has-[:checked]:text-white transition">
+                                            <i class="fa-solid fa-broom"></i>
+                                        </div>
+                                        <span class="font-bold text-slate-800 group-has-[:checked]:text-brand-900">Kebersihan Area</span>
+                                    </div>
+                                    <span class="text-xs text-slate-500">Sampah Menumpuk, Lantai Kotor, Toilet/Pantry Kotor</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Sub-Category & Item Selection -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Jenis Aset / Objek <span class="text-red-500">*</span></label>
+                                <select id="subKategoriSelect" required class="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-xl p-3 text-sm focus:ring-brand-500 focus:border-brand-500 font-medium">
+                                    <!-- Options dynamic via JS -->
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Gedung / Kompleks <span class="text-red-500">*</span></label>
+                                <select id="gedungSelect" required onchange="updateLantaiOptions()" class="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-xl p-3 text-sm focus:ring-brand-500 focus:border-brand-500 font-medium">
+                                    <option value="Gedung Tower">Gedung Tower (12 Lantai)</option>
+                                    <option value="Gedung Podium">Gedung Podium (5 Lantai)</option>
+                                    <option value="Mall Pelayanan Publik">Mall Pelayanan Publik (Lantai 1)</option>
+                                    <option value="Area luar / Parkiran">Area Luar / Lapangan / Parkiran</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Location Detail -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Lantai / Posisi <span class="text-red-500">*</span></label>
+                                <select id="lantaiSelect" required class="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-xl p-3 text-sm focus:ring-brand-500 focus:border-brand-500 font-medium">
+                                    <!-- Dynamic Lantai -->
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Detail Ruangan / Kode Aset</label>
+                                <input type="text" id="detailLokasiInput" placeholder="Contoh: R. Rapat Bagian Umum / AC-TWR-04" class="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-xl p-3 text-sm focus:ring-brand-500 focus:border-brand-500 font-medium">
+                            </div>
+                        </div>
+
+                        <!-- Identitas Pelapor -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-slate-100">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Nama Pelapor / Pegawai <span class="text-red-500">*</span></label>
+                                <input type="text" id="namaPelapor" required placeholder="Nama Lengkap / NIP" class="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-xl p-3 text-sm focus:ring-brand-500 focus:border-brand-500 font-medium">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">No. WhatsApp / HP <span class="text-red-500">*</span></label>
+                                <input type="tel" id="kontakPelapor" required placeholder="08xxxxxxxxxx" class="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-xl p-3 text-sm focus:ring-brand-500 focus:border-brand-500 font-medium">
+                            </div>
+                        </div>
+
+                        <!-- Description -->
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Deskripsi Kerusakan / Masalah <span class="text-red-500">*</span></label>
+                            <textarea id="deskripsiInput" rows="3" required placeholder="Jelaskan secara singkat kronologi atau kondisi fisik masalah..." class="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-xl p-3 text-sm focus:ring-brand-500 focus:border-brand-500 font-medium"></textarea>
+                        </div>
+
+                        <!-- Photo Upload -->
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Unggah Foto Bukti Kondisi</label>
+                            <div class="flex items-center justify-center w-full">
+                                <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-slate-300 border-dashed rounded-xl cursor-pointer bg-slate-50 hover:bg-slate-100 transition">
+                                    <div class="flex flex-col items-center justify-center pt-5 pb-6 text-slate-500">
+                                        <i class="fa-solid fa-cloud-arrow-up text-2xl mb-2 text-brand-500"></i>
+                                        <p class="text-xs font-medium text-slate-700">Klik untuk upload foto dari HP / Kamera</p>
+                                        <p class="text-[10px] text-slate-400 mt-1">PNG, JPG atau JPEG (Max. 5MB)</p>
+                                    </div>
+                                    <input type="file" id="fotoInput" accept="image/*" class="hidden" onchange="previewImage(event)">
+                                </label>
+                            </div>
+                            <!-- Preview Container -->
+                            <div id="imagePreviewContainer" class="hidden mt-3 relative inline-block">
+                                <img id="imagePreview" src="" class="h-28 rounded-lg border border-slate-300 object-cover shadow-sm">
+                                <button type="button" onclick="removeImagePreview()" class="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs shadow hover:bg-red-700">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="pt-4">
+                            <button type="submit" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3.5 px-6 rounded-xl shadow-lg transition duration-200 flex items-center justify-center space-x-2 text-base">
+                                <i class="fa-solid fa-paper-plane"></i>
+                                <span>Kirim Laporan Pengaduan</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Info Sidebar -->
+                <div class="space-y-6">
+                    <!-- Quick Info Box -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80 space-y-4">
+                        <h3 class="font-bold text-slate-800 text-base flex items-center space-x-2">
+                            <i class="fa-solid fa-circle-info text-amber-500"></i>
+                            <span>Panduan Pengaduan</span>
+                        </h3>
+                        <ul class="space-y-3 text-xs text-slate-600 leading-relaxed">
+                            <li class="flex items-start space-x-2">
+                                <span class="bg-brand-100 text-brand-700 font-bold px-2 py-0.5 rounded text-[10px] mt-0.5">1</span>
+                                <span><strong>Scan QR Code:</strong> Cari stiker QR Code yang terpasang pada AC, Toilet, Lift, atau Zona Kebersihan untuk pengisian otomatis.</span>
+                            </li>
+                            <li class="flex items-start space-x-2">
+                                <span class="bg-brand-100 text-brand-700 font-bold px-2 py-0.5 rounded text-[10px] mt-0.5">2</span>
+                                <span><strong>Foto Lokasi:</strong> Sertakan foto yang jelas agar tim teknisi/cleaner lebih cepat mengidentifikasi titik penanganan.</span>
+                            </li>
+                            <li class="flex items-start space-x-2">
+                                <span class="bg-brand-100 text-brand-700 font-bold px-2 py-0.5 rounded text-[10px] mt-0.5">3</span>
+                                <span><strong>Nomor Tiket:</strong> Simpan nomor tiket digital setelah pelaporan untuk memantau proses penanganan.</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Building Specs Card -->
+                    <div class="bg-gradient-to-br from-slate-900 to-brand-900 text-white p-6 rounded-2xl shadow-sm space-y-4">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h4 class="font-bold text-sm text-amber-400 uppercase tracking-wider">Cakupan Wilayah Operasional</h4>
+                                <p class="text-xs text-slate-300">Balai Kota Kendari</p>
+                            </div>
+                            <i class="fa-solid fa-city text-2xl text-slate-500"></i>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2 text-center pt-2">
+                            <div class="bg-white/10 p-2.5 rounded-xl backdrop-blur-sm">
+                                <div class="text-xl font-extrabold text-amber-400">12</div>
+                                <div class="text-[10px] text-slate-300 font-medium mt-0.5">Lantai Tower</div>
+                            </div>
+                            <div class="bg-white/10 p-2.5 rounded-xl backdrop-blur-sm">
+                                <div class="text-xl font-extrabold text-amber-400">5</div>
+                                <div class="text-[10px] text-slate-300 font-medium mt-0.5">Lantai Podium</div>
+                            </div>
+                            <div class="bg-white/10 p-2.5 rounded-xl backdrop-blur-sm">
+                                <div class="text-xl font-extrabold text-amber-400">MPP</div>
+                                <div class="text-[10px] text-slate-300 font-medium mt-0.5">Lantai 1</div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= SECTION 2: CEK TIKET (PUBLIC) ================= -->
+        <section id="tab-track-ticket" class="hidden space-y-6 max-w-4xl mx-auto">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
+                <div class="text-center max-w-md mx-auto space-y-3">
+                    <div class="w-12 h-12 bg-brand-100 text-brand-600 rounded-2xl flex items-center justify-center mx-auto text-xl font-bold">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-slate-800">Lacak Status Pengaduan</h2>
+                    <p class="text-xs text-slate-500">Masukkan Nomor Tiket Digital yang Anda dapatkan saat mengirimkan laporan (Contoh: LPR-202611-001)</p>
+                    
+                    <form onsubmit="searchTicket(event)" class="flex gap-2 pt-2">
+                        <input type="text" id="ticketSearchInput" required placeholder="Nomor Tiket (misal: LPR-202611-001)" class="flex-1 bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-brand-500 focus:border-brand-500 font-semibold uppercase tracking-wider">
+                        <button type="submit" class="bg-brand-600 text-white font-semibold px-6 py-3 rounded-xl hover:bg-brand-700 transition">
+                            Cari
+                        </button>
+                    </form>
+                </div>
+
+                <div id="ticketSearchResult" class="mt-8 hidden border-t border-slate-100 pt-6">
+                    <!-- Ticket Details Injected Here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= SECTION 3: DASHBOARD PENGELOLA (ADMIN ONLY) ================= -->
+        <section id="tab-admin-dashboard" class="hidden space-y-6">
+            <!-- Admin Top Bar -->
+            <div class="bg-slate-900 text-white rounded-2xl p-6 shadow-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 bg-amber-400 text-brand-900 font-bold rounded-xl flex items-center justify-center text-xl shadow">
+                        <i class="fa-solid fa-user-shield"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <h2 class="text-xl font-bold text-white">Dashboard Pengelola & Administrator</h2>
+                            <span class="bg-amber-400/20 text-amber-400 text-xs px-2.5 py-0.5 rounded-full font-semibold border border-amber-400/30">Kabag Umum</span>
+                        </div>
+                        <p class="text-xs text-slate-400">Pengelolaan Aset, Modul QR Code, & Dispatch Tiket Pemeliharaan Balai Kota Kendari</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3 w-full md:w-auto">
+                    <button onclick="switchAdminTab('tickets')" id="admin-tab-btn-tickets" class="flex-1 md:flex-none px-4 py-2 rounded-xl text-xs font-bold bg-brand-600 text-white shadow">
+                        <i class="fa-solid fa-list-check me-1"></i> Manajemen Tiket
+                    </button>
+                    <button onclick="switchAdminTab('qr-generator')" id="admin-tab-btn-qr" class="flex-1 md:flex-none px-4 py-2 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 hover:bg-slate-700">
+                        <i class="fa-solid fa-qrcode me-1"></i> Generator QR Aset
+                    </button>
+                </div>
+            </div>
+
+            <!-- SUB TAB 1: TICKETS MANAGEMENT -->
+            <div id="admin-subtab-tickets" class="space-y-6">
+                <!-- Summary Metrics Cards -->
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Laporan</p>
+                            <h3 class="text-2xl font-black text-slate-800 mt-1" id="stat-total">0</h3>
+                        </div>
+                        <div class="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-lg">
+                            <i class="fa-solid fa-inbox"></i>
+                        </div>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-bold text-amber-600 uppercase tracking-wider">Menunggu (Pending)</p>
+                            <h3 class="text-2xl font-black text-amber-600 mt-1" id="stat-pending">0</h3>
+                        </div>
+                        <div class="w-10 h-10 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center text-lg">
+                            <i class="fa-solid fa-clock-rotate-left"></i>
+                        </div>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-bold text-brand-600 uppercase tracking-wider">Sedang Diproses</p>
+                            <h3 class="text-2xl font-black text-brand-600 mt-1" id="stat-progress">0</h3>
+                        </div>
+                        <div class="w-10 h-10 bg-brand-50 text-brand-600 rounded-xl flex items-center justify-center text-lg">
+                            <i class="fa-solid fa-person-digging"></i>
+                        </div>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-bold text-emerald-600 uppercase tracking-wider">Selesai (Done)</p>
+                            <h3 class="text-2xl font-black text-emerald-600 mt-1" id="stat-completed">0</h3>
+                        </div>
+                        <div class="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-lg">
+                            <i class="fa-solid fa-circle-check"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filters & Table -->
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="p-5 border-b border-slate-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div class="flex items-center space-x-3">
+                            <h3 class="font-bold text-slate-800">Daftar Tiket Aduan Masuk</h3>
+                            <span class="text-xs bg-slate-100 text-slate-600 px-2.5 py-0.5 rounded-full font-medium" id="ticket-count-badge">0 Tiket</span>
+                        </div>
+                        
+                        <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
+                            <select id="filterKategori" onchange="renderAdminTickets()" class="bg-slate-50 border border-slate-300 text-slate-700 text-xs rounded-lg p-2 font-medium">
+                                <option value="ALL">Semua Kategori</option>
+                                <option value="FASILITAS">Fasilitas Kantor</option>
+                                <option value="KEBERSIHAN">Kebersihan Area</option>
+                            </select>
+                            <select id="filterStatus" onchange="renderAdminTickets()" class="bg-slate-50 border border-slate-300 text-slate-700 text-xs rounded-lg p-2 font-medium">
+                                <option value="ALL">Semua Status</option>
+                                <option value="PENDING">Menunggu</option>
+                                <option value="DIPROSES">Diproses</option>
+                                <option value="SELESAI">Selesai</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Table -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm text-slate-600">
+                            <thead class="bg-slate-50 text-xs text-slate-500 uppercase tracking-wider font-semibold">
+                                <tr>
+                                    <th class="px-6 py-3.5">Tiket & Waktu</th>
+                                    <th class="px-6 py-3.5">Lokasi / Aset</th>
+                                    <th class="px-6 py-3.5">Kategori & Masalah</th>
+                                    <th class="px-6 py-3.5">Pelapor</th>
+                                    <th class="px-6 py-3.5">Status</th>
+                                    <th class="px-6 py-3.5 text-right">Tindakan</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ticketsTableBody" class="divide-y divide-slate-100">
+                                <!-- Dynamic Rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUB TAB 2: GENERATOR QR CODE ASET -->
+            <div id="admin-subtab-qr-generator" class="hidden space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Generator Form -->
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                        <div class="border-b border-slate-100 pb-3">
+                            <h3 class="font-bold text-slate-800 text-base flex items-center space-x-2">
+                                <i class="fa-solid fa-qrcode text-brand-600"></i>
+                                <span>Generator Stiker QR Code Aset</span>
+                            </h3>
+                            <p class="text-xs text-slate-500">Buat QR Code terasosiasi dengan Lokasi/Aset Balai Kota Kendari</p>
+                        </div>
+
+                        <form id="qrGenForm" onsubmit="generateQRCode(event)" class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Gedung / Kompleks</label>
+                                <select id="qrGedung" required onchange="updateQrLantaiOptions()" class="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-xl p-2.5 text-xs font-medium">
+                                    <option value="Gedung Tower">Gedung Tower (12 Lantai)</option>
+                                    <option value="Gedung Podium">Gedung Podium (5 Lantai)</option>
+                                    <option value="Mall Pelayanan Publik">Mall Pelayanan Publik (Lantai 1)</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Lantai / Zona</label>
+                                <select id="qrLantai" required class="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-xl p-2.5 text-xs font-medium">
+                                    <!-- Options dynamic -->
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Kategori Objek</label>
+                                <select id="qrKategori" required class="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-xl p-2.5 text-xs font-medium">
+                                    <option value="AC">AC / System Pendingin</option>
+                                    <option value="Lift">Lift / Elevator</option>
+                                    <option value="Lampu">Lampu / Penerangan Ruangan</option>
+                                    <option value="Toilet">Toilet / Sanitasi</option>
+                                    <option value="Kendaraan Dinas">Kendaraan Dinas</option>
+                                    <option value="Kebersihan Ruangan">Zona Kebersihan Ruang Kerja</option>
+                                    <option value="Pantry">Zona Kebersihan Pantry</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Kode / Label Aset (Unique ID)</label>
+                                <input type="text" id="qrAssetCode" placeholder="Contoh: AC-TWR-1002 / TOILET-POD-02" required class="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-xl p-2.5 text-xs font-semibold uppercase">
+                            </div>
+
+                            <button type="submit" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-2.5 rounded-xl text-xs transition shadow">
+                                <i class="fa-solid fa-wand-magic-sparkles me-1"></i> Generate QR Code Stiker
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- QR Preview & Sticker Template -->
+                    <div class="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between items-center text-center">
+                        <div class="w-full">
+                            <h3 class="font-bold text-slate-800 text-base mb-1">Pratinjau Stiker QR Code Official</h3>
+                            <p class="text-xs text-slate-500 mb-6">Desain stiker terstandarisasi siap cetak untuk ditempelkan pada fisik aset</p>
+
+                            <!-- Official Printable Sticker Preview Container -->
+                            <div id="stickerCard" class="inline-block bg-white border-4 border-slate-900 rounded-2xl p-6 shadow-2xl max-w-sm w-full mx-auto text-center relative overflow-hidden">
+                                <!-- Sticker Header -->
+                                <div class="bg-brand-900 text-white -mx-6 -mt-6 p-4 mb-4 border-b-4 border-amber-400">
+                                    <div class="flex items-center justify-center space-x-2">
+                                        <i class="fa-solid fa-bolt text-amber-400 text-lg"></i>
+                                        <span class="font-extrabold text-base tracking-wider uppercase">LAPOR CEPAT</span>
+                                    </div>
+                                    <p class="text-[10px] text-slate-300 uppercase tracking-widest font-semibold mt-0.5">Balai Kota Kendari</p>
+                                </div>
+
+                                <!-- QR Code Canvas Target -->
+                                <div class="flex justify-center my-4">
+                                    <div id="qrcode-preview" class="p-2 bg-white rounded-xl border border-slate-200 shadow-inner"></div>
+                                </div>
+
+                                <!-- Asset Label Details -->
+                                <div class="space-y-1 text-slate-800">
+                                    <div class="font-black text-sm uppercase text-brand-900" id="preview-asset-code">AC-TWR-1002</div>
+                                    <div class="text-xs font-bold text-slate-600" id="preview-asset-location">Gedung Tower • Lantai 10</div>
+                                    <span class="inline-block px-2.5 py-0.5 bg-amber-100 text-amber-800 text-[10px] font-bold rounded-full uppercase" id="preview-asset-cat">AC / Pendingin</span>
+                                </div>
+
+                                <!-- Sticker Footer Instructions -->
+                                <div class="mt-4 pt-3 border-t border-dashed border-slate-300 text-[10px] font-medium text-slate-500 flex items-center justify-center space-x-1">
+                                    <i class="fa-solid fa-camera text-brand-600"></i>
+                                    <span>Scan QR ini untuk pengaduan cepat</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Print Action -->
+                        <div class="mt-6 pt-4 border-t border-slate-100 w-full flex justify-center space-x-3">
+                            <button onclick="printSticker()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow transition flex items-center space-x-2">
+                                <i class="fa-solid fa-print"></i>
+                                <span>Cetak Stiker QR Aset</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-white border-t border-slate-200 py-6 mt-auto no-print">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500 space-y-1">
+            <p class="font-semibold text-slate-700">© 2026 Bagian Umum Sekretariat Daerah Kota Kendari</p>
+            <p>Sistem Layanan Pengaduan Fasilitas & Kebersihan Kantor Terpadu (LAPOR CEPAT)</p>
+        </div>
+    </footer>
+
+    <!-- ================= MODALS ================= -->
+
+    <!-- MODAL 1: LOGIN PENGELOLA -->
+    <div id="loginModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden no-print">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-5 border border-slate-100 relative animate-in fade-in zoom-in duration-200">
+            <button onclick="closeLoginModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="text-center space-y-2">
+                <div class="w-12 h-12 bg-amber-400 text-brand-900 font-bold rounded-2xl flex items-center justify-center mx-auto text-xl shadow">
+                    <i class="fa-solid fa-lock"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-800">Login Dashbor Pengelola</h3>
+                <p class="text-xs text-slate-500">Khusus Administrator Bagian Umum Sekretariat Daerah</p>
+            </div>
+
+            <form onsubmit="handleLoginSubmit(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Username Pengelola</label>
+                    <input type="text" id="loginUsername" required placeholder="Masukkan Username" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-sm font-semibold focus:ring-brand-500 focus:border-brand-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Password</label>
+                    <input type="password" id="loginPassword" required placeholder="••••••••••••" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-sm font-semibold focus:ring-brand-500 focus:border-brand-500">
+                </div>
+
+                <button type="submit" class="w-full bg-brand-700 hover:bg-brand-800 text-white font-bold py-3 rounded-xl shadow transition">
+                    Masuk ke Dashboard Pengelola
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: QR CODE SCANNER SIMULATOR & CAMERA -->
+    <div id="scannerModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden no-print">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4 border border-slate-100 relative">
+            <button onclick="closeScannerModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="text-center">
+                <h3 class="text-lg font-bold text-slate-800 flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-qrcode text-brand-600"></i>
+                    <span>Scan QR Code Aset / Zona</span>
+                </h3>
+                <p class="text-xs text-slate-500 mt-1">Arahkan kamera HP ke stiker QR Code di lokasi atau gunakan simulasi preset</p>
+            </div>
+
+            <!-- Interactive Camera Scanner Viewport -->
+            <div id="reader" class="w-full rounded-xl overflow-hidden border-2 border-dashed border-brand-500 bg-slate-900 text-white min-h-[220px] flex flex-col items-center justify-center">
+                <i class="fa-solid fa-camera text-4xl text-slate-600 animate-pulse mb-2"></i>
+                <span class="text-xs text-slate-400">Aktifkan Kamera Browser...</span>
+            </div>
+
+            <!-- SIMULATED SCAN BUTTONS FOR FAST DEMO / TEST -->
+            <div class="pt-2 border-t border-slate-100">
+                <p class="text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2 text-center">Atau Uji Coba Presets QR Aset Terdaftar:</p>
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                    <button onclick="simulateQrScan('AC-TWR-1004', 'FASILITAS', 'Gedung Tower', 'Lantai 10', 'AC')" class="p-2 bg-slate-100 hover:bg-brand-50 hover:text-brand-700 rounded-lg text-left border border-slate-200 transition">
+                        <div class="font-bold">AC-TWR-1004</div>
+                        <div class="text-[10px] text-slate-500">Gedung Tower • Lt 10</div>
+                    </button>
+                    <button onclick="simulateQrScan('LFT-POD-01', 'FASILITAS', 'Gedung Podium', 'Lantai 1', 'Lift')" class="p-2 bg-slate-100 hover:bg-brand-50 hover:text-brand-700 rounded-lg text-left border border-slate-200 transition">
+                        <div class="font-bold">LFT-POD-01</div>
+                        <div class="text-[10px] text-slate-500">Gedung Podium • Lt 1</div>
+                    </button>
+                    <button onclick="simulateQrScan('TOILET-MPP-01', 'KEBERSIHAN', 'Mall Pelayanan Publik', 'Lantai 1', 'Toilet')" class="p-2 bg-slate-100 hover:bg-brand-50 hover:text-brand-700 rounded-lg text-left border border-slate-200 transition">
+                        <div class="font-bold">TOILET-MPP-01</div>
+                        <div class="text-[10px] text-slate-500">MPP • Lantai 1</div>
+                    </button>
+                    <button onclick="simulateQrScan('PANTRY-TWR-05', 'KEBERSIHAN', 'Gedung Tower', 'Lantai 5', 'Pantry')" class="p-2 bg-slate-100 hover:bg-brand-50 hover:text-brand-700 rounded-lg text-left border border-slate-200 transition">
+                        <div class="font-bold">PANTRY-TWR-05</div>
+                        <div class="text-[10px] text-slate-500">Pantry Tower • Lt 5</div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: TICKET CREATED SUCCESS & RECEIPT -->
+    <div id="successModal" class="fixed inset-0 bg-slate-900/75 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden no-print">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 text-center space-y-4 border border-slate-100">
+            <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-3xl shadow-inner">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <div>
+                <h3 class="text-xl font-black text-slate-800">Laporan Berhasil Terkirim!</h3>
+                <p class="text-xs text-slate-500 mt-1">Petugas pemeliharaan/kebersihan telah menerima notifikasi dispatch tiket ini.</p>
+            </div>
+
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 text-left space-y-2">
+                <div class="flex justify-between items-center border-b border-slate-200 pb-2">
+                    <span class="text-xs text-slate-500 font-semibold">Nomor Tiket Digital</span>
+                    <span class="text-sm font-black text-brand-700" id="successTicketNumber">LPR-XXXXXX</span>
+                </div>
+                <div class="text-xs text-slate-600 space-y-1 pt-1">
+                    <p><strong>Pelapor:</strong> <span id="successNama">-</span></p>
+                    <p><strong>Lokasi:</strong> <span id="successLokasi">-</span></p>
+                    <p><strong>Kategori:</strong> <span id="successKategori">-</span></p>
+                </div>
+            </div>
+
+            <div class="pt-2 flex space-x-2">
+                <button onclick="closeSuccessModal()" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-2.5 rounded-xl text-xs transition">
+                    Tutup
+                </button>
+                <button onclick="trackSuccessTicket()" class="flex-1 bg-brand-600 hover:bg-brand-700 text-white font-bold py-2.5 rounded-xl text-xs transition">
+                    Pantau Status Tiket
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 4: PRATINJAU FOTO BUKTI PEMOHON (LIGHTBOX + UNDUH + CETAK + TUTUP) -->
+    <div id="photoPreviewModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full overflow-hidden border border-slate-200 flex flex-col max-h-[90vh]">
+            <!-- Modal Header -->
+            <div class="px-5 py-4 bg-slate-900 text-white flex items-center justify-between no-print">
+                <div class="flex items-center space-x-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-brand-600 flex items-center justify-center text-white text-sm">
+                        <i class="fa-solid fa-image"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold leading-tight">Pratinjau Bukti Foto Laporan</h3>
+                        <p class="text-[11px] text-slate-300" id="previewModalSubtitle">Tiket #LPR-XXXXXX</p>
+                    </div>
+                </div>
+                <button onclick="closePhotoPreviewModal()" title="Tutup Pratinjau" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-red-500 text-white flex items-center justify-center transition">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Image Viewport -->
+            <div class="flex-1 bg-slate-100 p-4 sm:p-6 flex items-center justify-center overflow-auto min-h-[260px]">
+                <img id="modalPreviewImage" src="" alt="Bukti Foto Laporan" class="max-h-[60vh] w-auto max-w-full rounded-xl shadow-md border border-slate-200 object-contain bg-white">
+            </div>
+
+            <!-- Action Footer (Unduh, Cetak, Tutup) -->
+            <div class="px-5 py-4 bg-white border-t border-slate-200 flex flex-wrap items-center justify-between gap-3 no-print">
+                <div class="text-xs text-slate-500 hidden sm:block">
+                    <i class="fa-solid fa-circle-info text-brand-500 me-1"></i>
+                    Gunakan tombol di samping untuk menyimpan atau mencetak bukti lampiran.
+                </div>
+                <div class="flex items-center space-x-2.5 w-full sm:w-auto justify-end">
+                    <button type="button" onclick="downloadCurrentPreviewPhoto()" class="flex-1 sm:flex-none px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl text-xs shadow-sm transition flex items-center justify-center space-x-1.5">
+                        <i class="fa-solid fa-download"></i>
+                        <span>Unduh</span>
+                    </button>
+                    <button type="button" onclick="printCurrentPreviewPhoto()" class="flex-1 sm:flex-none px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow-sm transition flex items-center justify-center space-x-1.5">
+                        <i class="fa-solid fa-print"></i>
+                        <span>Cetak</span>
+                    </button>
+                    <button type="button" onclick="closePhotoPreviewModal()" class="flex-1 sm:flex-none px-4 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold rounded-xl text-xs transition flex items-center justify-center space-x-1.5">
+                        <i class="fa-solid fa-xmark"></i>
+                        <span>Tutup</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC & APP CONTROLLER -->
+    <script>
+        // DATA STORES IN MEMORY & DEFAULT SEEDS
+        let tickets = [
+            {
+                id: 'LPR-202611-001',
+                timestamp: '2026-11-22 09:15',
+                kategori: 'FASILITAS',
+                subKategori: 'AC',
+                gedung: 'Gedung Tower',
+                lantai: 'Lantai 10',
+                detailLokasi: 'Ruang Kerja Bagian Hukum (AC-TWR-1004)',
+                namaPelapor: 'Ahmad Faisal, S.STP',
+                kontakPelapor: '081234567890',
+                deskripsi: 'AC mati total sejak pagi, lampu indikator berkedip merah dan hawa panas.',
+                foto: 'https://placehold.co/800x500/e2e8f0/1e293b?text=Bukti+Foto+AC+Mati+(LPR-202611-001)',
+                status: 'DIPROSES'
+            },
+            {
+                id: 'LPR-202611-002',
+                timestamp: '2026-11-22 10:30',
+                kategori: 'KEBERSIHAN',
+                subKategori: 'Toilet',
+                gedung: 'Mall Pelayanan Publik',
+                lantai: 'Lantai 1',
+                detailLokasi: 'Toilet Pria Samping Counter Perizinan',
+                namaPelapor: 'Siti Rahma',
+                kontakPelapor: '085299887766',
+                deskripsi: 'Air toilet meluap dan tempat cuci tangan tersumbat.',
+                foto: 'https://placehold.co/800x500/e2e8f0/1e293b?text=Bukti+Foto+Toilet+MPP+(LPR-202611-002)',
+                status: 'PENDING'
+            },
+            {
+                id: 'LPR-202611-003',
+                timestamp: '2026-11-21 14:00',
+                kategori: 'FASILITAS',
+                subKategori: 'Lift',
+                gedung: 'Gedung Podium',
+                lantai: 'Lantai 2',
+                detailLokasi: 'Lift Utama Podium (LFT-POD-01)',
+                namaPelapor: 'Dedi Kurniawan',
+                kontakPelapor: '081122334455',
+                deskripsi: 'Pintu lift tersendat dan bunyi derit keras saat bergerak.',
+                foto: null,
+                status: 'SELESAI'
+            }
+        ];
+
+        let currentUser = null; // null if public, Object if logged in
+        let html5QrcodeScanner = null;
+        let qrcodeGenInstance = null;
+        let lastCreatedTicket = null;
+        let activePreviewTicket = null; // Stores ticket currently previewed in photo modal
+
+        // DICTIONARIES FOR DYNAMIC SELECTS
+        const subKategoriOptions = {
+            FASILITAS: ['AC', 'Lift', 'Lampu', 'Toilet', 'Kendaraan Dinas', 'Fasilitas Lainnya'],
+            KEBERSIHAN: ['Sampah Menumpuk', 'Lantai Kotor / Licin', 'Toilet Tidak Higienis', 'Pantry Kotor', 'Area Ruang Rapat', 'Kebersihan Lainnya']
+        };
+
+        const lantaiOptionsByGedung = {
+            'Gedung Tower': ['Lantai 1', 'Lantai 2', 'Lantai 3', 'Lantai 4', 'Lantai 5', 'Lantai 6', 'Lantai 7', 'Lantai 8', 'Lantai 9', 'Lantai 10', 'Lantai 11', 'Lantai 12'],
+            'Gedung Podium': ['Lantai 1', 'Lantai 2', 'Lantai 3', 'Lantai 4', 'Lantai 5'],
+            'Mall Pelayanan Publik': ['Lantai 1 (MPP Utama)'],
+            'Area luar / Parkiran': ['Halaman Depan', 'Parkir Gedung Tower', 'Parkir Gedung Podium', 'Kantin / Taman']
+        };
+
+        // INITIALIZATION ON LOAD
+        window.onload = function() {
+            updateSubKategoriOptions();
+            updateLantaiOptions();
+            updateQrLantaiOptions();
+            renderAdminTickets();
+            initQRCodePreview();
+
+            // Close photo preview modal on ESC key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closePhotoPreviewModal();
+                }
+            });
+        };
+
+        // UI TABS & NAVIGATION CONTROLLER
+        function switchTab(tabId) {
+            document.getElementById('tab-public-report').classList.add('hidden');
+            document.getElementById('tab-track-ticket').classList.add('hidden');
+            document.getElementById('tab-admin-dashboard').classList.add('hidden');
+
+            document.getElementById('nav-report-btn').className = "px-3 py-2 rounded-lg text-sm font-medium hover:bg-brand-700 transition flex items-center space-x-1.5";
+            document.getElementById('nav-track-btn').className = "px-3 py-2 rounded-lg text-sm font-medium hover:bg-brand-700 transition flex items-center space-x-1.5";
+
+            if (tabId === 'public-report') {
+                document.getElementById('tab-public-report').classList.remove('hidden');
+                document.getElementById('nav-report-btn').className = "px-3 py-2 rounded-lg text-sm font-medium bg-brand-700 hover:bg-brand-600 transition flex items-center space-x-1.5";
+            } else if (tabId === 'track-ticket') {
+                document.getElementById('tab-track-ticket').classList.remove('hidden');
+                document.getElementById('nav-track-btn').className = "px-3 py-2 rounded-lg text-sm font-medium bg-brand-700 hover:bg-brand-600 transition flex items-center space-x-1.5";
+            } else if (tabId === 'admin-dashboard') {
+                if (!currentUser) {
+                    openLoginModal();
+                    return;
+                }
+                document.getElementById('tab-admin-dashboard').classList.remove('hidden');
+            }
+        }
+
+        function switchAdminTab(subTab) {
+            document.getElementById('admin-subtab-tickets').classList.add('hidden');
+            document.getElementById('admin-subtab-qr-generator').classList.add('hidden');
+
+            document.getElementById('admin-tab-btn-tickets').className = "flex-1 md:flex-none px-4 py-2 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 hover:bg-slate-700";
+            document.getElementById('admin-tab-btn-qr').className = "flex-1 md:flex-none px-4 py-2 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 hover:bg-slate-700";
+
+            if (subTab === 'tickets') {
+                document.getElementById('admin-subtab-tickets').classList.remove('hidden');
+                document.getElementById('admin-tab-btn-tickets').className = "flex-1 md:flex-none px-4 py-2 rounded-xl text-xs font-bold bg-brand-600 text-white shadow";
+            } else if (subTab === 'qr-generator') {
+                document.getElementById('admin-subtab-qr-generator').classList.remove('hidden');
+                document.getElementById('admin-tab-btn-qr').className = "flex-1 md:flex-none px-4 py-2 rounded-xl text-xs font-bold bg-brand-600 text-white shadow";
+            }
+        }
+
+        // DYNAMIC SELECT CONTROLLERS
+        function updateSubKategoriOptions() {
+            const kategori = document.querySelector('input[name="kategori"]:checked').value;
+            const select = document.getElementById('subKategoriSelect');
+            select.innerHTML = '';
+            
+            subKategoriOptions[kategori].forEach(item => {
+                const opt = document.createElement('option');
+                opt.value = item;
+                opt.textContent = item;
+                select.appendChild(opt);
+            });
+        }
+
+        function updateLantaiOptions() {
+            const gedung = document.getElementById('gedungSelect').value;
+            const select = document.getElementById('lantaiSelect');
+            select.innerHTML = '';
+            
+            lantaiOptionsByGedung[gedung].forEach(lt => {
+                const opt = document.createElement('option');
+                opt.value = lt;
+                opt.textContent = lt;
+                select.appendChild(opt);
+            });
+        }
+
+        function updateQrLantaiOptions() {
+            const gedung = document.getElementById('qrGedung').value;
+            const select = document.getElementById('qrLantai');
+            select.innerHTML = '';
+            
+            lantaiOptionsByGedung[gedung].forEach(lt => {
+                const opt = document.createElement('option');
+                opt.value = lt;
+                opt.textContent = lt;
+                select.appendChild(opt);
+            });
+        }
+
+        // IMAGE PREVIEW CONTROLLER (FORM UPLOAD)
+        let uploadedPhotoData = null;
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    uploadedPhotoData = e.target.result;
+                    document.getElementById('imagePreview').src = uploadedPhotoData;
+                    document.getElementById('imagePreviewContainer').classList.remove('hidden');
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function removeImagePreview() {
+            uploadedPhotoData = null;
+            document.getElementById('fotoInput').value = '';
+            document.getElementById('imagePreviewContainer').classList.add('hidden');
+        }
+
+        // REPORT SUBMISSION HANDLER
+        function handleReportSubmit(e) {
+            e.preventDefault();
+
+            const kategori = document.querySelector('input[name="kategori"]:checked').value;
+            const subKategori = document.getElementById('subKategoriSelect').value;
+            const gedung = document.getElementById('gedungSelect').value;
+            const lantai = document.getElementById('lantaiSelect').value;
+            const detailLokasi = document.getElementById('detailLokasiInput').value;
+            const namaPelapor = document.getElementById('namaPelapor').value;
+            const kontakPelapor = document.getElementById('kontakPelapor').value;
+            const deskripsi = document.getElementById('deskripsiInput').value;
+
+            // Generate Ticket ID
+            const dateStr = new Date().toISOString().slice(0,10).replace(/-/g,'');
+            const randomNum = Math.floor(1000 + Math.random() * 9000);
+            const ticketId = `LPR-${dateStr}-${randomNum}`;
+
+            const newTicket = {
+                id: ticketId,
+                timestamp: new Date().toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' }),
+                kategori: kategori,
+                subKategori: subKategori,
+                gedung: gedung,
+                lantai: lantai,
+                detailLokasi: detailLokasi || `${subKategori} - ${lantai}`,
+                namaPelapor: namaPelapor,
+                kontakPelapor: kontakPelapor,
+                deskripsi: deskripsi,
+                foto: uploadedPhotoData || null,
+                status: 'PENDING'
+            };
+
+            // Save to memory array
+            tickets.unshift(newTicket);
+            lastCreatedTicket = newTicket;
+
+            // Update UI & Stats
+            renderAdminTickets();
+            showToast('Laporan berhasil dikirim! Nomor tiket Anda: ' + ticketId, 'success');
+
+            // Reset form
+            document.getElementById('reportForm').reset();
+            removeImagePreview();
+            document.getElementById('qr-badge').classList.add('hidden');
+            document.getElementById('qr-badge').classList.remove('flex');
+
+            // Open Modal Confirmation
+            document.getElementById('successTicketNumber').textContent = newTicket.id;
+            document.getElementById('successNama').textContent = newTicket.namaPelapor;
+            document.getElementById('successLokasi').textContent = `${newTicket.gedung} (${newTicket.lantai})`;
+            document.getElementById('successKategori').textContent = `${newTicket.kategori} - ${newTicket.subKategori}`;
+            document.getElementById('successModal').classList.remove('hidden');
+        }
+
+        function closeSuccessModal() {
+            document.getElementById('successModal').classList.add('hidden');
+        }
+
+        function trackSuccessTicket() {
+            closeSuccessModal();
+            if (lastCreatedTicket) {
+                switchTab('track-ticket');
+                document.getElementById('ticketSearchInput').value = lastCreatedTicket.id;
+                renderSearchResult(lastCreatedTicket);
+            }
+        }
+
+        // TICKET TRACKING / SEARCH LOGIC
+        function searchTicket(e) {
+            e.preventDefault();
+            const query = document.getElementById('ticketSearchInput').value.trim().toUpperCase();
+            const found = tickets.find(t => t.id.toUpperCase() === query);
+
+            if (found) {
+                renderSearchResult(found);
+            } else {
+                showToast('Nomor Tiket tidak ditemukan dalam sistem', 'error');
+                document.getElementById('ticketSearchResult').innerHTML = `
+                    <div class="text-center py-6 text-slate-500">
+                        <i class="fa-solid fa-circle-exclamation text-3xl text-amber-500 mb-2"></i>
+                        <p class="font-medium text-sm">Tiket dengan nomor "${query}" tidak ditemukan.</p>
+                        <p class="text-xs text-slate-400 mt-1">Pastikan penulisan nomor tiket sesuai dengan tanda bukti laporan.</p>
+                    </div>
+                `;
+                document.getElementById('ticketSearchResult').classList.remove('hidden');
+            }
+        }
+
+        function renderSearchResult(ticket) {
+            const statusBadges = {
+                PENDING: '<span class="bg-amber-100 text-amber-800 border border-amber-300 text-xs px-3 py-1 rounded-full font-bold inline-flex items-center space-x-1"><i class="fa-solid fa-clock"></i><span>MENUNGGU RESPONS</span></span>',
+                DIPROSES: '<span class="bg-blue-100 text-blue-800 border border-blue-300 text-xs px-3 py-1 rounded-full font-bold inline-flex items-center space-x-1"><i class="fa-solid fa-wrench"></i><span>SEDANG DITANGANI</span></span>',
+                SELESAI: '<span class="bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs px-3 py-1 rounded-full font-bold inline-flex items-center space-x-1"><i class="fa-solid fa-check-circle"></i><span>PENANGANAN SELESAI</span></span>'
+            };
+
+            const container = document.getElementById('ticketSearchResult');
+            container.innerHTML = `
+                <div class="bg-slate-50 rounded-2xl p-6 border border-slate-200 space-y-4">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-200 pb-4">
+                        <div>
+                            <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Detail Laporan</span>
+                            <h3 class="text-xl font-black text-brand-900">${ticket.id}</h3>
+                            <p class="text-xs text-slate-500">${ticket.timestamp}</p>
+                        </div>
+                        <div>
+                            ${statusBadges[ticket.status]}
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                        <div class="space-y-1">
+                            <p class="text-slate-400 uppercase font-semibold">Pelapor & Kontak</p>
+                            <p class="font-bold text-slate-800 text-sm">${ticket.namaPelapor}</p>
+                            <p class="text-slate-600"><i class="fa-brands fa-whatsapp text-emerald-600 me-1"></i>${ticket.kontakPelapor}</p>
+                        </div>
+                        <div class="space-y-1">
+                            <p class="text-slate-400 uppercase font-semibold">Lokasi Kerusakan / Aset</p>
+                            <p class="font-bold text-slate-800 text-sm">${ticket.gedung} - ${ticket.lantai}</p>
+                            <p class="text-slate-600"><i class="fa-solid fa-location-dot text-red-500 me-1"></i>${ticket.detailLokasi}</p>
+                        </div>
+                    </div>
+
+                    <div class="pt-2 border-t border-slate-200 space-y-1">
+                        <p class="text-xs text-slate-400 uppercase font-semibold">Deskripsi Aduan (${ticket.kategori} - ${ticket.subKategori})</p>
+                        <p class="text-sm text-slate-700 bg-white p-3 rounded-xl border border-slate-200">${ticket.deskripsi}</p>
+                    </div>
+
+                    ${ticket.foto ? `
+                    <div class="pt-3 border-t border-slate-200">
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-2.5">
+                            <p class="text-xs text-slate-400 uppercase font-semibold">Bukti Foto dari Pemohon</p>
+                            <div class="flex items-center space-x-2">
+                                <button type="button" onclick="openPhotoPreviewModal('${ticket.id}')" class="px-3 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 border border-brand-200 rounded-lg text-xs font-bold transition flex items-center space-x-1.5">
+                                    <i class="fa-solid fa-expand"></i>
+                                    <span>Pratinjau Penuh</span>
+                                </button>
+                                <button type="button" onclick="downloadTicketPhoto('${ticket.id}')" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-lg text-xs font-bold transition flex items-center space-x-1.5">
+                                    <i class="fa-solid fa-download"></i>
+                                    <span>Unduh</span>
+                                </button>
+                                <button type="button" onclick="printTicketPhoto('${ticket.id}')" class="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-lg text-xs font-bold transition flex items-center space-x-1.5">
+                                    <i class="fa-solid fa-print"></i>
+                                    <span>Cetak</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div onclick="openPhotoPreviewModal('${ticket.id}')" class="group relative inline-block cursor-pointer overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                            <img src="${ticket.foto}" alt="Bukti Foto ${ticket.id}" class="h-48 sm:h-56 w-auto max-w-full object-cover transition duration-300 group-hover:scale-105">
+                            <div class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                                <span class="bg-white/95 text-slate-900 px-3.5 py-1.5 rounded-full text-xs font-bold shadow flex items-center space-x-1.5">
+                                    <i class="fa-solid fa-magnifying-glass-plus text-brand-600"></i>
+                                    <span>Klik untuk Pratinjau</span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    ` : `
+                    <div class="pt-3 border-t border-slate-200">
+                        <p class="text-xs text-slate-400 uppercase font-semibold mb-1">Bukti Foto dari Pemohon</p>
+                        <p class="text-xs text-slate-500 italic bg-white p-3 rounded-xl border border-dashed border-slate-200">Pemohon tidak melampirkan foto bukti pada laporan ini.</p>
+                    </div>
+                    `}
+                </div>
+            `;
+            container.classList.remove('hidden');
+        }
+
+        // ================= PHOTO PREVIEW, DOWNLOAD & PRINT CONTROLLERS =================
+        function openPhotoPreviewModal(ticketId) {
+            const ticket = tickets.find(t => t.id === ticketId);
+            if (!ticket || !ticket.foto) return;
+
+            activePreviewTicket = ticket;
+            document.getElementById('previewModalSubtitle').textContent = `Tiket ${ticket.id} • ${ticket.gedung} (${ticket.lantai})`;
+            document.getElementById('modalPreviewImage').src = ticket.foto;
+            document.getElementById('photoPreviewModal').classList.remove('hidden');
+        }
+
+        function closePhotoPreviewModal() {
+            document.getElementById('photoPreviewModal').classList.add('hidden');
+            activePreviewTicket = null;
+        }
+
+        function downloadCurrentPreviewPhoto() {
+            if (activePreviewTicket) {
+                downloadTicketPhoto(activePreviewTicket.id);
+            }
+        }
+
+        function printCurrentPreviewPhoto() {
+            if (activePreviewTicket) {
+                printTicketPhoto(activePreviewTicket.id);
+            }
+        }
+
+        async function downloadTicketPhoto(ticketId) {
+            const ticket = tickets.find(t => t.id === ticketId);
+            if (!ticket || !ticket.foto) return;
+
+            const fileName = `Bukti_Laporan_${ticket.id}.png`;
+
+            try {
+                // If Data URL (uploaded directly from file input)
+                if (ticket.foto.startsWith('data:')) {
+                    const link = document.createElement('a');
+                    link.href = ticket.foto;
+                    link.download = fileName;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    showToast(`Foto bukti ${ticket.id} berhasil diunduh.`, 'success');
+                    return;
+                }
+
+                // Fetch remote image as Blob to ensure reliable file download
+                const response = await fetch(ticket.foto);
+                const blob = await response.blob();
+                const blobUrl = URL.createObjectURL(blob);
+
+                const link = document.createElement('a');
+                link.href = blobUrl;
+                link.download = fileName;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(blobUrl);
+
+                showToast(`Foto bukti ${ticket.id} berhasil diunduh.`, 'success');
+            } catch (err) {
+                // Fallback direct open in new tab if CORS blocks fetch
+                const link = document.createElement('a');
+                link.href = ticket.foto;
+                link.target = '_blank';
+                link.download = fileName;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                showToast('Membuka gambar untuk disimpan...', 'info');
+            }
+        }
+
+        function printTicketPhoto(ticketId) {
+            const ticket = tickets.find(t => t.id === ticketId);
+            if (!ticket || !ticket.foto) return;
+
+            const printWindow = window.open('', '_blank', 'width=850,height=700');
+            if (!printWindow) {
+                showToast('Pop-up diblokir browser. Izinkan pop-up untuk mencetak foto.', 'error');
+                return;
+            }
+
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html lang="id">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Cetak Bukti Foto - ${ticket.id}</title>
+                    <style>
+                        body {
+                            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                            margin: 0;
+                            padding: 28px;
+                            color: #1e293b;
+                            background: #ffffff;
+                        }
+                        .header {
+                            border-bottom: 3px solid #095186;
+                            padding-bottom: 12px;
+                            margin-bottom: 20px;
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                        }
+                        .header h1 {
+                            margin: 0;
+                            font-size: 18px;
+                            color: #095186;
+                        }
+                        .header p {
+                            margin: 2px 0 0;
+                            font-size: 12px;
+                            color: #64748b;
+                        }
+                        .meta {
+                            background: #f8fafc;
+                            border: 1px solid #e2e8f0;
+                            border-radius: 8px;
+                            padding: 12px 16px;
+                            margin-bottom: 20px;
+                            font-size: 12px;
+                            line-height: 1.6;
+                        }
+                        .meta strong {
+                            color: #0f172a;
+                        }
+                        .photo-box {
+                            text-align: center;
+                            border: 1px solid #cbd5e1;
+                            border-radius: 10px;
+                            padding: 16px;
+                            background: #ffffff;
+                        }
+                        .photo-box img {
+                            max-width: 100%;
+                            max-height: 520px;
+                            object-fit: contain;
+                            border-radius: 6px;
+                        }
+                        .footer {
+                            margin-top: 20px;
+                            text-align: right;
+                            font-size: 11px;
+                            color: #64748b;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <div>
+                            <h1>LAMPIRAN BUKTI FOTO PENGADUAN</h1>
+                            <p>Sistem LAPOR CEPAT - Balai Kota Kendari</p>
+                        </div>
+                        <div style="text-align: right;">
+                            <strong style="font-size: 14px; color: #095186;">${ticket.id}</strong>
+                            <p>${ticket.timestamp}</p>
+                        </div>
+                    </div>
+
+                    <div class="meta">
+                        <div><strong>Pelapor:</strong> ${ticket.namaPelapor} (${ticket.kontakPelapor})</div>
+                        <div><strong>Lokasi:</strong> ${ticket.gedung} - ${ticket.lantai} (${ticket.detailLokasi})</div>
+                        <div><strong>Kategori:</strong> ${ticket.kategori} - ${ticket.subKategori}</div>
+                        <div><strong>Keterangan:</strong> ${ticket.deskripsi}</div>
+                    </div>
+
+                    <div class="photo-box">
+                        <img id="printImg" src="${ticket.foto}" alt="Bukti Foto Laporan">
+                    </div>
+
+                    <div class="footer">
+                        Dicetak pada: ${new Date().toLocaleString('id-ID')}
+                    </div>
+
+                    <script>
+                        const img = document.getElementById('printImg');
+                        function triggerPrint() {
+                            window.focus();
+                            window.print();
+                            window.close();
+                        }
+                        if (img.complete) {
+                            setTimeout(triggerPrint, 250);
+                        } else {
+                            img.onload = () => setTimeout(triggerPrint, 250);
+                            img.onerror = () => setTimeout(triggerPrint, 250);
+                        }
+                    <\/script>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+        }
+
+        // AUTHENTICATION CONTROLLER (MODAL & LOGIN)
+        function openLoginModal() {
+            document.getElementById('loginModal').classList.remove('hidden');
+        }
+
+        function closeLoginModal() {
+            document.getElementById('loginModal').classList.add('hidden');
+        }
+
+        function handleLoginSubmit(e) {
+            e.preventDefault();
+            const u = document.getElementById('loginUsername').value.trim();
+            const p = document.getElementById('loginPassword').value.trim();
+
+            if (u === 'Kabag_Umum' && p === '197812022025211010') {
+                currentUser = { username: 'Kabag_Umum', role: 'Pengelola Utama' };
+                closeLoginModal();
+                updateAuthButtonUI();
+                switchTab('admin-dashboard');
+                showToast('Selamat datang, Kepala Bagian Umum!', 'success');
+            } else {
+                showToast('Username atau Password Pengelola salah!', 'error');
+            }
+        }
+
+        function logoutAdmin() {
+            currentUser = null;
+            updateAuthButtonUI();
+            switchTab('public-report');
+            showToast('Anda telah logout dari Dashboard Pengelola', 'info');
+        }
+
+        function updateAuthButtonUI() {
+            const container = document.getElementById('auth-button-container');
+            if (currentUser) {
+                container.innerHTML = `
+                    <div class="flex items-center space-x-2">
+                        <button onclick="switchTab('admin-dashboard')" class="px-3 py-2 rounded-lg text-xs font-bold bg-amber-400 text-brand-900 hover:bg-amber-300 transition flex items-center space-x-1">
+                            <i class="fa-solid fa-chart-line"></i>
+                            <span>Dashboard</span>
+                        </button>
+                        <button onclick="logoutAdmin()" title="Logout Pengelola" class="p-2 rounded-lg text-xs font-medium text-slate-200 hover:bg-brand-700 hover:text-white transition">
+                            <i class="fa-solid fa-right-from-bracket text-base"></i>
+                        </button>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = `
+                    <button onclick="openLoginModal()" class="px-3.5 py-2 rounded-lg text-sm font-semibold bg-amber-400 hover:bg-amber-300 text-brand-900 transition flex items-center space-x-1.5 shadow-sm">
+                        <i class="fa-solid fa-right-to-bracket"></i>
+                        <span>Login Pengelola</span>
+                    </button>
+                `;
+            }
+        }
+
+        // ADMIN DASHBOARD & TICKET MANAGEMENT
+        function renderAdminTickets() {
+            const katFilter = document.getElementById('filterKategori').value;
+            const statFilter = document.getElementById('filterStatus').value;
+
+            let filtered = tickets.filter(t => {
+                const matchKat = katFilter === 'ALL' || t.kategori === katFilter;
+                const matchStat = statFilter === 'ALL' || t.status === statFilter;
+                return matchKat && matchStat;
+            });
+
+            // Update Counts
+            document.getElementById('stat-total').textContent = tickets.length;
+            document.getElementById('stat-pending').textContent = tickets.filter(t => t.status === 'PENDING').length;
+            document.getElementById('stat-progress').textContent = tickets.filter(t => t.status === 'DIPROSES').length;
+            document.getElementById('stat-completed').textContent = tickets.filter(t => t.status === 'SELESAI').length;
+            document.getElementById('ticket-count-badge').textContent = `${filtered.length} Tiket`;
+
+            const tbody = document.getElementById('ticketsTableBody');
+            tbody.innerHTML = '';
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="px-6 py-8 text-center text-slate-400 text-xs font-medium">
+                            Tidak ada tiket aduan yang sesuai dengan filter ini.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            filtered.forEach(t => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
+
+                const badgeClass = {
+                    PENDING: 'bg-amber-100 text-amber-800 border-amber-200',
+                    DIPROSES: 'bg-blue-100 text-blue-800 border-blue-200',
+                    SELESAI: 'bg-emerald-100 text-emerald-800 border-emerald-200'
+                }[t.status];
+
+                tr.innerHTML = `
+                    <td class="px-6 py-4">
+                        <div class="font-bold text-slate-800 text-xs">${t.id}</div>
+                        <div class="text-[10px] text-slate-400 mt-0.5"><i class="fa-solid fa-clock me-1"></i>${t.timestamp}</div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="font-semibold text-slate-700 text-xs">${t.gedung}</div>
+                        <div class="text-[11px] text-slate-500">${t.lantai} - ${t.detailLokasi}</div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold ${t.kategori==='FASILITAS'?'bg-amber-100 text-amber-800':'bg-emerald-100 text-emerald-800'} mb-1">
+                            ${t.kategori}
+                        </span>
+                        <div class="text-xs text-slate-700 font-medium">${t.subKategori}</div>
+                        <div class="text-[11px] text-slate-500 line-clamp-1 max-w-xs" title="${t.deskripsi}">${t.deskripsi}</div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="font-medium text-slate-800 text-xs">${t.namaPelapor}</div>
+                        <div class="text-[10px] text-slate-400"><i class="fa-brands fa-whatsapp text-emerald-600 me-0.5"></i>${t.kontakPelapor}</div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <select onchange="updateTicketStatus('${t.id}', this.value)" class="text-xs font-bold rounded-lg border px-2.5 py-1 ${badgeClass} cursor-pointer focus:outline-none">
+                            <option value="PENDING" ${t.status==='PENDING'?'selected':''}>MENUNGGU</option>
+                            <option value="DIPROSES" ${t.status==='DIPROSES'?'selected':''}>DIPROSES</option>
+                            <option value="SELESAI" ${t.status==='SELESAI'?'selected':''}>SELESAI</option>
+                        </select>
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                        <button onclick="viewTicketDetail('${t.id}')" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition">
+                            <i class="fa-solid fa-eye me-1"></i> Detail
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function updateTicketStatus(id, newStatus) {
+            const ticket = tickets.find(t => t.id === id);
+            if (ticket) {
+                ticket.status = newStatus;
+                renderAdminTickets();
+                showToast(`Status Tiket ${id} diperbarui menjadi ${newStatus}`, 'success');
+            }
+        }
+
+        function viewTicketDetail(id) {
+            const ticket = tickets.find(t => t.id === id);
+            if (ticket) {
+                switchTab('track-ticket');
+                document.getElementById('ticketSearchInput').value = ticket.id;
+                renderSearchResult(ticket);
+            }
+        }
+
+        // QR CODE GENERATOR & PRINTING MODULE
+        function initQRCodePreview() {
+            const container = document.getElementById('qrcode-preview');
+            container.innerHTML = '';
+            qrcodeGenInstance = new QRCode(container, {
+                text: "LAPOR-CEPAT|AC-TWR-1002|FASILITAS|Gedung Tower|Lantai 10|AC",
+                width: 140,
+                height: 140,
+                colorDark: "#095186",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        }
+
+        function generateQRCode(e) {
+            e.preventDefault();
+            const gedung = document.getElementById('qrGedung').value;
+            const lantai = document.getElementById('qrLantai').value;
+            const kategoriObj = document.getElementById('qrKategori').value;
+            const assetCode = document.getElementById('qrAssetCode').value.trim().toUpperCase();
+
+            // Determine Kat Type
+            let katType = "FASILITAS";
+            if (kategoriObj.includes("Kebersihan") || kategoriObj.includes("Pantry")) {
+                katType = "KEBERSIHAN";
+            }
+
+            // PayLoad string embedded into QR
+            const payload = `LAPOR-CEPAT|${assetCode}|${katType}|${gedung}|${lantai}|${kategoriObj}`;
+
+            // Update Label Text Preview
+            document.getElementById('preview-asset-code').textContent = assetCode;
+            document.getElementById('preview-asset-location').textContent = `${gedung} • ${lantai}`;
+            document.getElementById('preview-asset-cat').textContent = kategoriObj;
+
+            // Redraw QR
+            const container = document.getElementById('qrcode-preview');
+            container.innerHTML = '';
+            qrcodeGenInstance = new QRCode(container, {
+                text: payload,
+                width: 140,
+                height: 140,
+                colorDark: "#095186",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+
+            showToast(`Stiker QR untuk Aset ${assetCode} berhasil di-generate!`, 'success');
+        }
+
+        function printSticker() {
+            window.print();
+        }
+
+        // QR CODE SCANNER MODAL & CAMERA CONTROLLER
+        function openScannerModal() {
+            document.getElementById('scannerModal').classList.remove('hidden');
+            
+            // Try initializing camera scanner via HTML5-QRCode
+            try {
+                html5QrcodeScanner = new Html5Qrcode("reader");
+                const config = { fps: 10, qrbox: { width: 200, height: 200 } };
+                
+                html5QrcodeScanner.start({ facingMode: "environment" }, config, onScanSuccess)
+                .catch(err => {
+                    console.log("Kamera tidak diizinkan atau tidak ada webcam, gunakan simulasi button.");
+                });
+            } catch(e) {
+                console.log("Webcam error fallback active");
+            }
+        }
+
+        function closeScannerModal() {
+            if (html5QrcodeScanner) {
+                html5QrcodeScanner.stop().then(() => {
+                    html5QrcodeScanner.clear();
+                }).catch(err => console.log(err));
+            }
+            document.getElementById('scannerModal').classList.add('hidden');
+        }
+
+        function onScanSuccess(decodedText, decodedResult) {
+            closeScannerModal();
+            // Expected Format: LAPOR-CEPAT|CODE|KATEGORI|GEDUNG|LANTAI|SUBKATEGORI
+            if (decodedText.startsWith("LAPOR-CEPAT|")) {
+                const parts = decodedText.split("|");
+                const code = parts[1];
+                const kat = parts[2];
+                const gedung = parts[3];
+                const lantai = parts[4];
+                const subKat = parts[5];
+                
+                populateFormFromQR(code, kat, gedung, lantai, subKat);
+            } else {
+                showToast("Format QR Code tidak dikenali sebagai stiker aset LAPOR CEPAT.", "error");
+            }
+        }
+
+        function simulateQrScan(code, kat, gedung, lantai, subKat) {
+            closeScannerModal();
+            populateFormFromQR(code, kat, gedung, lantai, subKat);
+        }
+
+        function populateFormFromQR(code, kat, gedung, lantai, subKat) {
+            // Check radio category
+            const radio = document.querySelector(`input[name="kategori"][value="${kat}"]`);
+            if (radio) {
+                radio.checked = true;
+                updateSubKategoriOptions();
+            }
+
+            // Gedung Select
+            document.getElementById('gedungSelect').value = gedung;
+            updateLantaiOptions();
+
+            // Lantai Select
+            document.getElementById('lantaiSelect').value = lantai;
+
+            // Sub-Kategori
+            const subSelect = document.getElementById('subKategoriSelect');
+            for (let i = 0; i < subSelect.options.length; i++) {
+                if (subSelect.options[i].value.toLowerCase().includes(subKat.toLowerCase())) {
+                    subSelect.selectedIndex = i;
+                    break;
+                }
+            }
+
+            // Set detail lokasi input
+            document.getElementById('detailLokasiInput').value = `${subKat} [Kode QR: ${code}]`;
+
+            // Display Badge
+            const badge = document.getElementById('qr-badge');
+            badge.classList.remove('hidden');
+            badge.classList.add('flex');
+
+            showToast(`QR Code Aset (${code}) terdeteksi! Formulir telah terisi otomatis.`, 'success');
+            
+            // Scroll to form smooth
+            document.getElementById('form-laporan').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // UTILITY TOAST NOTIFICATION
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            const bgClass = {
+                success: 'bg-emerald-800 text-white border-emerald-600',
+                error: 'bg-red-800 text-white border-red-600',
+                info: 'bg-brand-800 text-white border-brand-600'
+            }[type];
+
+            const iconClass = {
+                success: 'fa-solid fa-circle-check text-emerald-400',
+                error: 'fa-solid fa-triangle-exclamation text-red-400',
+                info: 'fa-solid fa-circle-info text-blue-400'
+            }[type];
+
+            toast.className = `${bgClass} pointer-events-auto border px-4 py-3 rounded-xl shadow-xl flex items-center space-x-3 text-xs font-semibold animate-in slide-in-from-bottom duration-300 max-w-sm`;
+            toast.innerHTML = `
+                <i class="${iconClass} text-base"></i>
+                <span class="flex-1">${message}</span>
+                <button onclick="this.parentElement.remove()" class="text-slate-300 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            `;
+
+            container.appendChild(toast);
+                
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.remove();
+                }
+            }, 4500);
+        }
+    </script>
+</body>
+</html>
